@@ -23,7 +23,7 @@ mod phuturex {
         /// This is a decimal value between 0 and 1 which defines the percentage of fee, that user need to pay, to make a position.
         fee: Decimal,
         ///This badge is the badge that has the authority to Add and windrow the tokens and change the value of the fee
-        auth_badge: FungibleVault,
+        auth_badge: ResourceManager,
         //These are list of all the position long and short
         positions: HashMap<ComponentAddress, Position>,
         /// Counter for generating unique position IDs
@@ -45,7 +45,8 @@ mod phuturex {
                 "You must pass in an initial supply of a token."
             );
 
-             let auth_badge: FungibleBucket = ResourceBuilder::new_fungible(OwnerRole::None)
+            let auth_badge = ResourceBuilder::new_fungible(OwnerRole::None)
+                .divisibility(DIVISIBILITY_NONE)
              .metadata(metadata! {
                 init {
                     "name" => "Admin Badge",locked;
@@ -58,7 +59,7 @@ mod phuturex {
             let component = Self {
                 pool: Vault::with_bucket(token),
                 fee: custom_fee,
-                auth_badge: FungibleVault::with_bucket(auth_badge),
+                auth_badge: auth_badge.resource_manager(),
                 positions: HashMap::new(),
                 position_counter: 0,
             }
@@ -69,11 +70,38 @@ mod phuturex {
             component
         }
         //auth can by done only by authorized address
-        pub fn deposit() {}
+        pub fn deposit(&mut self, auth: Proof, amount: Bucket) {
+            assert!(
+                auth.resource_address() == self.auth_badge.address(),
+                "Unauthorized access"
+            );
+            self.pool.put(amount);
+        }
+
+
         //auth can by done only by authorized address
-        pub fn withdraw() {}
+        pub fn withdraw(&mut self, auth: Proof, amount: Decimal) -> Bucket {
+            assert!(
+                auth.resource_address() == self.auth_badge.address(),
+                "Unauthorized access"
+            );
+            self.pool.take(amount)
+        }
+
+
         //auth can by done only by authorized address
-        pub fn change_fee() {}
+        pub fn change_fee(&mut self, auth: Proof, new_fee: Decimal) {
+            assert!(
+                auth.resource_address() == self.auth_badge.address(),
+                "Unauthorized access"
+            );
+            assert!(
+                new_fee >= dec!("0") && new_fee <= dec!("1"),
+                "Invalid fee value"
+            );
+            self.fee = new_fee;
+        }
+        
 
         pub fn add_position(
             &mut self,
