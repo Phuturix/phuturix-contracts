@@ -1,7 +1,7 @@
 use scrypto::prelude::*;
 
 mod state;
-use state::{Position, Side};
+use state::{Position, PositionState, Side};
 
 pub enum ManifestCustomValue {
     Address(ManifestAddress),
@@ -89,6 +89,7 @@ mod phuturex {
             };
 
             let position = Position {
+                state: PositionState::Open,
                 side,
                 leverage,
                 open_price,

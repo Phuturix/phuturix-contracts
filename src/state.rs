@@ -7,7 +7,14 @@ pub enum Side {
 }
 
 #[derive(ScryptoSbor, Debug)]
+pub enum PositionState {
+    Open,
+    Closed,
+}
+
+#[derive(ScryptoSbor, Debug)]
 pub struct Position {
+    pub state: PositionState,
     pub side: Side,
     pub leverage: Decimal,
     pub open_price: Decimal,
@@ -17,6 +24,7 @@ pub struct Position {
 
 impl Position {
     pub fn new(
+        state: PositionState,
         side: Side,
         leverage: Decimal,
         open_price: Decimal,
@@ -24,6 +32,7 @@ impl Position {
         collateral_size: Decimal,
     ) -> Self {
         Self {
+            state,
             side,
             leverage,
             open_price,
