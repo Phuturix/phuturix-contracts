@@ -15,7 +15,6 @@ pub enum ManifestCustomValue {
     AddressReservation(ManifestAddressReservation),
 }
 
-
 #[blueprint]
 mod phuturex {
     struct Phuturex {
@@ -26,15 +25,18 @@ mod phuturex {
         ///This badge is the badge that has the authority to Add and windrow the tokens and change the value of the fee
         auth_badge: FungibleVault,
         //These are list of all the position long and short
-        positions: HashMap<u64, Position>,
+        positions: HashMap<ComponentAddress, Position>,
         /// Counter for generating unique position IDs
         position_counter: u64,
     }
 
     impl Phuturex {
-        //When deploy 
-        pub fn instantiate_phuturex(token: Bucket, custom_fee: Decimal) ->  Global<phuturex::Phuturex> {
-             assert!(
+        //When deploy
+        pub fn instantiate_phuturex(
+            token: Bucket,
+            custom_fee: Decimal,
+        ) -> Global<phuturex::Phuturex> {
+            assert!(
                 custom_fee >= Decimal::zero() && custom_fee <= Decimal::one(),
                 "Invalid fee in thousandths"
             );
@@ -43,13 +45,13 @@ mod phuturex {
                 "You must pass in an initial supply of a token."
             );
 
-             let auth_badge = ResourceBuilder::new_fungible(OwnerRole::None)
-             .metadata(metadata! {
-                init {
-                    "name" => "Admin Badge",locked;
-                }
-            })
-            .mint_initial_supply(1);
+            let auth_badge: FungibleBucket = ResourceBuilder::new_fungible(OwnerRole::None)
+                .metadata(metadata! {
+                    init {
+                        "name" => "Admin Badge",locked;
+                    }
+                })
+                .mint_initial_supply(1);
 
             let component = Self {
                 pool: Vault::with_bucket(token),
@@ -62,23 +64,41 @@ mod phuturex {
             .prepare_to_globalize(OwnerRole::None)
             .globalize();
 
-
             component
         }
         //auth can by done only by authorized address
-        pub fn deposit(){}
-         //auth can by done only by authorized address
-        pub fn withdraw(){}
-       //auth can by done only by authorized address
-        pub fn change_fee(){}
+        pub fn deposit() {}
+        //auth can by done only by authorized address
+        pub fn withdraw() {}
+        //auth can by done only by authorized address
+        pub fn change_fee() {}
 
-        pub fn add_position() {
+        pub fn add_position(
+            &mut self,
+            account_address: ComponentAddress,
+            //side: Side,
+            leverage: Decimal,
+            open_price: Decimal,
+            borrowed_size: Decimal,
+            collateral_size: Decimal,
+        ) {
+            info!("Caller is: {}", account_address.to_hex());
 
+            let position = Position {
+                side: Side::Long,
+                leverage: leverage,
+                open_price: open_price,
+                borrowed_size: borrowed_size,
+                collateral_size: collateral_size,
+            };
+            self.positions.insert(account_address, position);
+            self.position_counter += 1;
         }
 
-        pub fn close_position() {
-            
-        }
+        pub fn close_position() {}
 
+        pub fn read_positions(&self) {
+            info!("Number of positions: {}", self.position_counter);
+        }
     }
 }
