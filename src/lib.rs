@@ -9,6 +9,8 @@ mod radiphuturix {
         pool_units_resource_manager: ResourceManager,
         /// The amount of fees imposed by the pool on swaps where 0 <= fee <= 1.
         fee: Decimal,
+        //These are list of all the position long and short
+        positions: HashMap<ResourceAddress, Position>
     }
 
     impl RadiPhuturix {
@@ -54,6 +56,7 @@ mod radiphuturix {
                 vault: FungibleVault::with_bucket(bucket),
                 pool_units_resource_manager: pool_units.resource_manager(),
                 fee: custom_fee,
+                positions: HashMap::new(),
             }
             .instantiate()
             .prepare_to_globalize(OwnerRole::None)
@@ -97,4 +100,23 @@ mod radiphuturix {
         
 
     }
+}
+
+
+pub enum Side {
+    Long,
+    Short
+}
+
+//TODO: how will we know the user Address of the position? 
+pub struct Position{
+    pub side: Side,
+    pub open_close_time_position: [String; 2],
+    pub leverage: f64,
+    pub open_price: f32,
+    pub liquidation_price: f32,
+    pub borrowed_size: f32,
+    pub collateral_size: f32,
+    pub fees: f32,
+    pub is_active: bool,
 }
