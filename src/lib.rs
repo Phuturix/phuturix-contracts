@@ -35,7 +35,7 @@ mod phuturex {
         pub fn instantiate_phuturex(
             token: Bucket,
             custom_fee: Decimal,
-        ) -> Global<phuturex::Phuturex> {
+        ) -> (Global<phuturex::Phuturex>, FungibleBucket){
             assert!(
                 custom_fee >= Decimal::zero() && custom_fee <= Decimal::one(),
                 "Invalid fee in thousandths"
@@ -67,7 +67,7 @@ mod phuturex {
             .prepare_to_globalize(OwnerRole::None)
             .globalize();
 
-            component
+            (component, auth_badge)
         }
         //auth can by done only by authorized address
         pub fn deposit(&mut self, auth: Proof, amount: Bucket) {
