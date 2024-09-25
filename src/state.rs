@@ -1,12 +1,12 @@
 use scrypto::prelude::*;
 
-#[derive(ScryptoSbor)]
+#[derive(ScryptoSbor, Debug)]
 pub enum Side {
     Long,
     Short,
 }
 
-#[derive(ScryptoSbor)]
+#[derive(ScryptoSbor, Debug)]
 pub struct Position {
     pub side: Side,
     pub leverage: Decimal,
