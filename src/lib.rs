@@ -69,6 +69,8 @@ mod phuturex {
 
             (component, auth_badge)
         }
+
+        
         //auth can by done only by authorized address
         pub fn deposit(&mut self, auth: Proof, amount: Bucket) {
             assert!(
@@ -130,7 +132,21 @@ mod phuturex {
             self.position_counter += 1;
         }
 
-        pub fn close_position() {}
+        pub fn close_position(&mut self, account_address: ComponentAddress) -> Option<Position> {
+            match self.positions.remove(&account_address) {
+                Some(mut position) => {
+                    position.state = PositionState::Closed;
+                    // TODO: Add more logic to calculate the profit or lost, update to user's wallet
+                    
+                    info!("Position closed for account: {:?}", account_address);
+                    Some(position)
+                },
+                None => {
+                    info!("No open position found for account: {:?}", account_address);
+                    None
+                }
+            }
+        }
 
         pub fn read_positions(&self) {
             info!("Number of positions: {}", self.positions.keys().len());
