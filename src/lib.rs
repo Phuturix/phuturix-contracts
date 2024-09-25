@@ -47,6 +47,8 @@ mod phuturex {
              .metadata(metadata! {
                 init {
                     "name" => "Admin Badge",locked;
+                    "symbol"  => "AB", locked;
+                    "description"  => "This is an admin badge that has the authority to deposit or withdraw tokens in the pool", locked;
                 }
             })
             .mint_initial_supply(1);
