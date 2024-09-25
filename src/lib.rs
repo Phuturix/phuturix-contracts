@@ -5,7 +5,6 @@ mod radiswap {
     struct RadiPhuturix {
         /// A vault containing pool reverses of  token 
         vault: FungibleVault,
-
         /// The token address of a token representing pool units in this pool
         pool_units_resource_manager: ResourceManager,
         /// The amount of fees imposed by the pool on swaps where 0 <= fee <= 1.
@@ -17,6 +16,7 @@ mod radiswap {
         pub fn instantiate_radiswap(
             bucket: FungibleBucket,
             fee: Decimal,
+            name: String
         ) -> (Global<RadiPhuturix>, FungibleBucket) {
             // Ensure that none of the buckets are empty and that an appropriate 
             // fee is set.
@@ -37,7 +37,7 @@ mod radiswap {
             let pool_units: FungibleBucket = ResourceBuilder::new_fungible(OwnerRole::None)
                 .metadata(metadata!(
                     init {
-                        "name" => "Pool Units", locked;
+                        "name" => name, locked;
                     }
                 ))
                 .mint_roles(mint_roles!(
