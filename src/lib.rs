@@ -1,7 +1,7 @@
 use scrypto::prelude::*;
 
 mod state;
-use state::{Position, Side};
+use state::{Position, PositionState, Side};
 
 pub enum ManifestCustomValue {
     Address(ManifestAddress),
@@ -106,20 +106,25 @@ mod phuturex {
         pub fn add_position(
             &mut self,
             account_address: ComponentAddress,
-            //side: Side,
+            side_str: String,
             leverage: Decimal,
             open_price: Decimal,
             borrowed_size: Decimal,
             collateral_size: Decimal,
         ) {
-            info!("Caller is: {}", account_address.to_hex());
+            let side = match side_str.as_str() {
+                "long" => Side::Long,
+                "short" => Side::Short,
+                _ => Side::Short, // handle invalid side_int!
+            };
 
             let position = Position {
-                side: Side::Long,
-                leverage: leverage,
-                open_price: open_price,
-                borrowed_size: borrowed_size,
-                collateral_size: collateral_size,
+                state: PositionState::Open,
+                side,
+                leverage,
+                open_price,
+                borrowed_size,
+                collateral_size,
             };
             self.positions.insert(account_address, position);
             self.position_counter += 1;
@@ -128,7 +133,7 @@ mod phuturex {
         pub fn close_position() {}
 
         pub fn read_positions(&self) {
-            info!("Number of positions: {}", self.position_counter);
+            info!("Number of positions: {}", self.positions.keys().len());
         }
     }
 }
