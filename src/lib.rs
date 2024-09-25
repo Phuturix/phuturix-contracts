@@ -1,7 +1,7 @@
 use scrypto::prelude::*;
 
 #[blueprint]
-mod radiswap {
+mod radiphuturix {
     struct RadiPhuturix {
         /// A vault containing pool reverses of  token 
         vault: FungibleVault,
@@ -15,18 +15,17 @@ mod radiswap {
         /// Creates a new liquidity pool of the two tokens sent to the pool
         pub fn instantiate_radiswap(
             bucket: FungibleBucket,
-            fee: Decimal,
+            custom_fee: Decimal,
             name: String
         ) -> (Global<RadiPhuturix>, FungibleBucket) {
-            // Ensure that none of the buckets are empty and that an appropriate 
-            // fee is set.
+            // Ensure that none of the buckets are empty and that an appropriate  and the fee is set
             assert!(
                 !bucket.is_empty(),
                 "You must pass in an initial supply of each token"
             );
             assert!(
-                fee >= dec!("0") && fee <= dec!("1"),
-                "Invalid fee in thousandths"
+                custom_fee >= dec!("0") && custom_fee <= dec!("1"),
+                "Invalid fee"
             );
 
             let (address_reservation, component_address) =
@@ -51,10 +50,10 @@ mod radiswap {
                 .mint_initial_supply(100);
 
             // Create the RadiPhuturix component and globalize it
-            let radiswap = Self {
+            let radiphuturix = Self {
                 vault: FungibleVault::with_bucket(bucket),
                 pool_units_resource_manager: pool_units.resource_manager(),
-                fee: fee,
+                fee: custom_fee,
             }
             .instantiate()
             .prepare_to_globalize(OwnerRole::None)
@@ -62,7 +61,7 @@ mod radiswap {
             .globalize();
 
             // Return the component address as well as the pool units tokens
-            (radiswap, pool_units)
+            (radiphuturix, pool_units)
         }
 
         /// Swaps token A for B, or vice versa.
