@@ -1,6 +1,6 @@
 use scrypto::prelude::*;
 
-mod state;
+pub mod state;
 use state::{Position, PositionState, Side};
 
 pub enum ManifestCustomValue {
@@ -32,6 +32,7 @@ mod phuturex {
 
     impl Phuturex {
         //When deploy
+        
         pub fn instantiate_phuturex(
             token: Bucket,
             custom_fee: Decimal,
@@ -111,8 +112,7 @@ mod phuturex {
             side_str: String,
             leverage: Decimal,
             open_price: Decimal,
-            borrowed_size: Decimal,
-            collateral_size: Decimal,
+            order_quantity: Decimal,
         ) {
             let side = match side_str.as_str() {
                 "long" => Side::Long,
@@ -125,8 +125,7 @@ mod phuturex {
                 side,
                 leverage,
                 open_price,
-                borrowed_size,
-                collateral_size,
+                order_quantity,
             };
             self.positions.insert(account_address, position);
             self.position_counter += 1;
@@ -152,4 +151,6 @@ mod phuturex {
             info!("Number of positions: {}", self.positions.keys().len());
         }
     }
+
+
 }
