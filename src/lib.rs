@@ -17,6 +17,8 @@ pub enum ManifestCustomValue {
 
 #[blueprint]
 mod phuturex {
+    use dummy_oracle::DummyOracle;
+
     struct Phuturex {
         /// This is the vault where the reserve of Token (eg. Radix), that will be used for making transaction long and short calls from a user
         pool: Vault,
@@ -28,11 +30,13 @@ mod phuturex {
         positions: HashMap<ComponentAddress, Position>,
         /// Counter for generating unique position IDs
         position_counter: u64,
+        // Address of the price oracle component
+        price_oracle: Global<DummyOracle>,
     }
 
     impl Phuturex {
         //When deploy
-        
+
         pub fn instantiate_phuturex(
             token: Bucket,
             custom_fee: Decimal,
@@ -57,12 +61,15 @@ mod phuturex {
             })
             .mint_initial_supply(1);
 
+            let price_oracle: Global<DummyOracle> = DummyOracle::new(dec!(0), dec!(1));
+
             let component = Self {
                 pool: Vault::with_bucket(token),
                 fee: custom_fee,
                 auth_badge: auth_badge.resource_manager(),
                 positions: HashMap::new(),
                 position_counter: 0,
+                price_oracle: price_oracle,
             }
             .instantiate()
             .prepare_to_globalize(OwnerRole::None)
@@ -71,7 +78,6 @@ mod phuturex {
             (component, auth_badge)
         }
 
-        
         //auth can by done only by authorized address
         pub fn deposit(&mut self, auth: Proof, amount: Bucket) {
             assert!(
@@ -133,10 +139,10 @@ mod phuturex {
                 Some(mut position) => {
                     position.state = PositionState::Closed;
                     // TODO: Add more logic to calculate the profit or lost, update to user's wallet
-                    
+
                     info!("Position closed for account: {:?}", account_address);
                     Some(position)
-                },
+                }
                 None => {
                     info!("No open position found for account: {:?}", account_address);
                     None
@@ -147,9 +153,18 @@ mod phuturex {
         pub fn read_positions(&self) {
             info!("Number of positions: {}", self.positions.keys().len());
         }
+
+        pub fn check_positions(&mut self) {
+            let current_price = self.price_oracle.get_price();
+            for (address, position) in &self.positions {
+                let liq_price = position.calculate_liquidation_price();
+                info!(
+                    "Liq Price: {} // Current price: {}",
+                    liq_price, current_price
+                )
+            }
+        }
     }
-
-
 }
 
 #[blueprint]
