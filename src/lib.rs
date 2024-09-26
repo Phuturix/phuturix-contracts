@@ -1,6 +1,8 @@
 use scrypto::prelude::*;
 
 pub mod state;
+mod match_rs;
+
 use state::{Position, PositionState, Side};
 
 pub enum ManifestCustomValue {
@@ -129,20 +131,34 @@ mod phuturex {
             self.position_counter += 1;
         }
 
-        pub fn close_position(&mut self, account_address: ComponentAddress) -> Option<Position> {
-            match self.positions.remove(&account_address) {
-                Some(mut position) => {
+        pub fn close_position(
+            &mut self, 
+            account_address: ComponentAddress, 
+            current_price: Decimal
+        ) -> Option<(Decimal, Decimal)> {
+            if let Some(position) = self.positions.get_mut(&account_address) {
+                if position.state == PositionState::Open {
+                    let (price_difference, close_fee) = match_rs::close_position(
+                        position,
+                        current_price,
+                        self.fee,
+                        &mut self.pool
+                    );
                     position.state = PositionState::Closed;
-                    // TODO: Add more logic to calculate the profit or lost, update to user's wallet
 
-                    info!("Position closed for account: {:?}", account_address);
-                    Some(position)
-                }
-                None => {
-                    info!("No open position found for account: {:?}", account_address);
+                    // Remove the position from the positions HashMap
+                    self.positions.remove(&account_address);
+    
+                    Some((price_difference, close_fee))
+                } else {
+                    info!("Position is already closed for account: {:?}", account_address);
                     None
                 }
+            } else {
+                info!("No position found for account: {:?}", account_address);
+                None
             }
+            
         }
 
         pub fn read_positions(&self) {
