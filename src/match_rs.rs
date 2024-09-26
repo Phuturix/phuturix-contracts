@@ -5,7 +5,8 @@ pub fn close_position(
     position: &mut Position,
     current_price: Decimal,
     fee: Decimal,
-    pool: &mut Vault
+    pool: &mut Vault,
+    account_address: ComponentAddress
 ) -> (Decimal, Decimal) {
     // Calculate the price difference
     let price_difference = calculate_price_difference(position, current_price);
@@ -16,14 +17,19 @@ pub fn close_position(
     // Calculate the total return (price difference minus closing fee)
     let total_return = price_difference - close_fee;
     
+    let mut payment = None;
+
     // Update the pool's funds
     if total_return > Decimal::zero() {
         // If profitable, pay from the pool
-        let payment = pool.take(total_return);
-        // TODO: Transfer payment to the user
+        payment = Some(pool.take(total_return));
+
     } else if total_return < Decimal::zero() {
         // If loss, collect from the user and deposit to the pool
         // TODO: Collect -total_return from the user and deposit into the pool
+
+        //let loss_payment: Bucket = user_vault.take(-total_return);
+        //pool.put(loss_payment);
     }
     
     // Update position state

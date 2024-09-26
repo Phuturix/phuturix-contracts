@@ -142,7 +142,8 @@ mod phuturex {
                         position,
                         current_price,
                         self.fee,
-                        &mut self.pool
+                        &mut self.pool,
+                        account_address
                     );
                     position.state = PositionState::Closed;
 
