@@ -36,7 +36,7 @@ mod phuturex {
         pub fn instantiate_phuturex(
             token: Bucket,
             custom_fee: Decimal,
-        ) -> (Global<phuturex::Phuturex>, FungibleBucket){
+        ) -> (Global<phuturex::Phuturex>, FungibleBucket) {
             assert!(
                 custom_fee >= Decimal::zero() && custom_fee <= Decimal::one(),
                 "Invalid fee in thousandths"
@@ -81,7 +81,6 @@ mod phuturex {
             self.pool.put(amount);
         }
 
-
         //auth can by done only by authorized address
         pub fn withdraw(&mut self, auth: Proof, amount: Decimal) -> Bucket {
             assert!(
@@ -90,7 +89,6 @@ mod phuturex {
             );
             self.pool.take(amount)
         }
-
 
         //auth can by done only by authorized address
         pub fn change_fee(&mut self, auth: Proof, new_fee: Decimal) {
@@ -104,7 +102,6 @@ mod phuturex {
             );
             self.fee = new_fee;
         }
-        
 
         pub fn add_position(
             &mut self,
@@ -153,4 +150,39 @@ mod phuturex {
     }
 
 
+}
+
+#[blueprint]
+mod dummy_oracle {
+    struct DummyOracle {
+        min_price: Decimal,
+        max_price: Decimal,
+    }
+
+    impl DummyOracle {
+        // Instantiate the oracle with a price range
+        pub fn new(min_price: Decimal, max_price: Decimal) -> Global<dummy_oracle::DummyOracle> {
+            Self {
+                min_price,
+                max_price,
+            }
+            .instantiate()
+            .prepare_to_globalize(OwnerRole::None)
+            .globalize()
+        }
+
+        pub fn get_price(&self) -> Decimal {
+            let tx_hash: Hash = Runtime::transaction_hash();
+            let bytes: &[u8] = &tx_hash.as_ref();
+            let mut array = [0u8; 16];
+            array.copy_from_slice(&bytes[..16]);
+            let num_from_tx_hash = u128::from_be_bytes(array);
+
+            let num_to_100 = Decimal::from(num_from_tx_hash % 100u128);
+            let price_range = self.max_price - self.min_price;
+            let price = self.min_price + price_range * (num_to_100 / dec!(100));
+            info!("Price: {}", price);
+            price
+        }
+    }
 }
