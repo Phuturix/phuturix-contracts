@@ -32,7 +32,7 @@ mod phuturex {
 
     impl Phuturex {
         //When deploy
-        
+
         pub fn instantiate_phuturex(
             token: Bucket,
             custom_fee: Decimal,
@@ -53,6 +53,7 @@ mod phuturex {
                     "name" => "Admin Badge",locked;
                     "symbol"  => "AB", locked;
                     "description"  => "This is an admin badge that has the authority to deposit or withdraw tokens in the pool", locked;
+                    "dapp_definitions" => ["account_tdx_2_12xlwap47z9ca8zz5tvgd428anj3tc6kudz02apu5swm67y2sruudsu"], locked;
                 }
             })
             .mint_initial_supply(1);
@@ -66,12 +67,12 @@ mod phuturex {
             }
             .instantiate()
             .prepare_to_globalize(OwnerRole::None)
+            .metadata(metadata!(init{"dapp_definition" => "account_tdx_2_12xlwap47z9ca8zz5tvgd428anj3tc6kudz02apu5swm67y2sruudsu", locked;}))
             .globalize();
 
             (component, auth_badge)
         }
 
-        
         //auth can by done only by authorized address
         pub fn deposit(&mut self, auth: Proof, amount: Bucket) {
             assert!(
@@ -133,10 +134,10 @@ mod phuturex {
                 Some(mut position) => {
                     position.state = PositionState::Closed;
                     // TODO: Add more logic to calculate the profit or lost, update to user's wallet
-                    
+
                     info!("Position closed for account: {:?}", account_address);
                     Some(position)
-                },
+                }
                 None => {
                     info!("No open position found for account: {:?}", account_address);
                     None
@@ -146,43 +147,6 @@ mod phuturex {
 
         pub fn read_positions(&self) {
             info!("Number of positions: {}", self.positions.keys().len());
-        }
-    }
-
-
-}
-
-#[blueprint]
-mod dummy_oracle {
-    struct DummyOracle {
-        min_price: Decimal,
-        max_price: Decimal,
-    }
-
-    impl DummyOracle {
-        // Instantiate the oracle with a price range
-        pub fn new(min_price: Decimal, max_price: Decimal) -> Global<dummy_oracle::DummyOracle> {
-            Self {
-                min_price,
-                max_price,
-            }
-            .instantiate()
-            .prepare_to_globalize(OwnerRole::None)
-            .globalize()
-        }
-
-        pub fn get_price(&self) -> Decimal {
-            let tx_hash: Hash = Runtime::transaction_hash();
-            let bytes: &[u8] = &tx_hash.as_ref();
-            let mut array = [0u8; 16];
-            array.copy_from_slice(&bytes[..16]);
-            let num_from_tx_hash = u128::from_be_bytes(array);
-
-            let num_to_100 = Decimal::from(num_from_tx_hash % 100u128);
-            let price_range = self.max_price - self.min_price;
-            let price = self.min_price + price_range * (num_to_100 / dec!(100));
-            info!("Price: {}", price);
-            price
         }
     }
 }
