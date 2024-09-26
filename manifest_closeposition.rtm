@@ -1,0 +1,18 @@
+# DISCLAIMER: The Radix page says whe shouldn't add this `lock fee` Call, but maybe it's necessary from the frontend (idk)
+
+# CALL_METHOD
+#     Address("component_sim1cptxxxxxxxxxfaucetxxxxxxxxx000527798379xxxxxxxxxhkrefh")
+#     "lock_fee"
+#     Decimal("5000")
+# ;
+CALL_METHOD
+    Address("component_tdx_2_1cqg6h0xmp6p3h529mq8fnr9m0lvlaaqaam7eec7w3ly7hlmscn675z") # Component instantiated in the StokeNet
+    "close_position"
+    Address("account_sim1c9yeaya6pehau0fn7vgavuggeev64gahsh05dauae2uu25njk224xz") # User Account ID
+;
+CALL_METHOD
+    Address("account_sim1c956qr3kxlgypxwst89j9yf24tjc7zxd4up38x37zr6q4jxdx9rhma") # User Account ID
+    "try_deposit_batch_or_refund"
+    Expression("ENTIRE_WORKTOP")
+    Enum<0u8>()
+;
